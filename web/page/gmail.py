@@ -1,118 +1,132 @@
+from web.element.gmail_element import *
+from web.page.basepage import BasePage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
-xpath_mail_select = "//tr[contains(.,'Hello')]//td[@data-tooltip='Select']"
-xpath_mail_select_latest = "({})[1]".format(xpath_mail_select)
 
 
 class GmailLocator(object):
-    EMAIL_INPUT = (By.XPATH, "//input[@type='email']")
-    PASSWORD_INPUT = (By.XPATH, "//input[@type='password']")
-    NEXT_BUTTON = (By.XPATH, "//button[contains(., '繼續')]")
-    COMPOSE_BUTTON = (By.XPATH, "//div[text()='Compose']")
+    # Login Page
+    EMAIL_INPUT = (By.XPATH, EMAIL_INPUT_XPATH)
+    PASSWORD_INPUT = (By.XPATH, PASSWORD_INPUT_XPATH)
+    NEXT_BUTTON = (By.XPATH, NEXT_BUTTON_XPATH)
 
-    RECIPIENTS_INPUT = (By.XPATH, "//textarea[@aria-label='To']")
-    SUBJECT_INPUT = (By.XPATH, "//input[@aria-label='Subject']")
-    MSG_BODY = (By.XPATH, "//div[@aria-label='Message Body']")
-    SEND_BUTTON = (By.XPATH, "//div[text()='Send']")
+    # Compose
+    COMPOSE_BUTTON = (By.XPATH, COMPOSE_BUTTON_XPATH)
+    RECIPIENTS_INPUT = (By.XPATH, RECIPIENTS_INPUT_XPATH)
+    SUBJECT_INPUT = (By.XPATH, SUBJECT_INPUT_XPATH)
+    MSG_BODY = (By.XPATH, MSG_BODY_XPATH)
+    SEND_BUTTON = (By.XPATH, SEND_BUTTON_XPATH)
 
-    MAIL_SUBJECT = (By.XPATH, "//tr[contains(.,'Hello')]")
-    MAIL_SUBJECT_SELECT = (
-        By.XPATH, "//tr[contains(.,'Hello')]//td[@data-tooltip='Select']")
+    # Inbox
+    LATEST_MAIL_SUBJECT = (By.XPATH, LATEST_MAIL_SUBJECT_XPATH)
+    MAIL_SUBJECT_SELECT = (By.XPATH, MAIL_SUBJECT_SELECT_XPATH)
 
-    BIN_BUTTON = (
-        By.XPATH, "//*[@id=':4']/div/div[1]/div[1]/div/div/div[2]/div[3]")
-    MORE_NAVIGATION = (By.XPATH, "//div[@role='navigation']//*[text()='More']")
-    BIN_NAVIGATION = (By.XPATH, "//span/a[@aria-label='Bin']")
+    # Navigation Bar
+    BIN_BUTTON = (By.XPATH, BIN_BUTTON_XPATH)
+    MORE_NAVIGATION = (By.XPATH, MORE_NAVIGATION_XPATH)
+    BIN_NAVIGATION = (By.XPATH, BIN_NAVIGATION_XPATH)
+    LAST_NAVIGATION = (By.XPATH, LAST_NAVIGATION_XPATH)
 
-    BIN_POPUP_MSG = "Conversation moved to Bin."
-    SENT_POPUP_MSG = "Message sent."
+    # Popup Message
+    POPUP_MSG = (By.XPATH, POPUP_MSG_XPATH)
 
 
-class GmailPage(object):
-    URL = "https://mail.google.com/"
+class GmailLoginPage():
 
     def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        super().__init__(driver)
+
+    def input_email(self, text):
+        self.input_text(GmailLocator.EMAIL_INPUT, text)
+
+    def input_passwrod(self, text):
+        self.input_text(GmailLocator.PASSWORD_INPUT, text)
+
+    def click_next_button(self):
+        self.click(GmailLocator.NEXT_BUTTON)
+
+    def login(self, email, password):
+        self.input_email(email)
+        self.click_next_button()
+        self.input_passwrod(password)
+        self.click_next_button()
+        self.wait.until(EC.url_matches(self.INBOX_URL))
+
+
+class GmailPage(BasePage):
+    URL = "https://mail.google.com/"
+    INBOX_URL = URL + "mail/u/0/#inbox"
+    TRASH_URL = URL + "mail/u/0/#trash"
+
+    def __init__(self, driver):
+        super().__init__(driver)
 
     def load(self):
         self.driver.get(self.URL)
 
-    def input_email(self, text):
-        element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.EMAIL_INPUT))
-        element.send_keys(text)
-
-    def input_passwrod(self, text):
-        element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.PASSWORD_INPUT))
-        element.send_keys(text)
-
-    def click_next_button(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.NEXT_BUTTON))
-        element.click()
-
+    # compoase
     def click_compose_button(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.COMPOSE_BUTTON))
-        element.click()
+        self.click(GmailLocator.COMPOSE_BUTTON)
 
-    def input_recipients(self, mail):
-        self.driver.find_element(
-            *GmailLocator.RECIPIENTS_INPUT).send_keys(mail)
-        print(*GmailLocator.RECIPIENTS_INPUT)
+    def input_recipients(self, recipients):
+        self.input_text(GmailLocator.RECIPIENTS_INPUT, recipients)
 
-    def input_subject(self, text):
-        self.driver.find_element(
-            *GmailLocator.SUBJECT_INPUT).send_keys(text)
+    def input_subject(self, subject):
+        self.input_text(GmailLocator.SUBJECT_INPUT, subject)
 
-    def input_message_box(self, text):
-        self.driver.find_element(
-            *GmailLocator.MSG_BODY).send_keys(text)
+    def input_message_box(self, body_text):
+        self.input_text(GmailLocator.MSG_BODY, body_text)
 
     def click_send_button(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.SEND_BUTTON))
-        element.click()
+        self.click(GmailLocator.SEND_BUTTON)
 
-    def select_subject(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, xpath_mail_select)))
-        element.click()
-
+    # inbox
     def select_latest_subject(self):
-        element = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, xpath_mail_select_latest)))
-        element.click()
+        self.click((By.XPATH, MAIL_SELECT_LATEST_XPATH))
 
     def click_bin_button(self):
         self.wait.until(
             lambda driver: self.driver.find_element(*GmailLocator.BIN_BUTTON))
         self.driver.find_element(*GmailLocator.BIN_BUTTON).click()
 
+    # navigation bar
     def click_more_span(self):
-        element = self.driver.find_element(*GmailLocator.MORE_NAVIGATION)
-        element.location_once_scrolled_into_view
-        self.wait.until(
-            lambda driver: self.driver.find_element(*GmailLocator.MORE_NAVIGATION))
-        self.driver.find_element(*GmailLocator.MORE_NAVIGATION).click()
+        self.scroll_to_element(*GmailLocator.MORE_NAVIGATION)
+        self.click(GmailLocator.MORE_NAVIGATION)
 
     def click_bin_span(self):
-        element = self.driver.find_element_by_xpath(
-            "(//div[@role='navigation']/div/div[3]/div/div/div/div)[last()]")
-        element.location_once_scrolled_into_view
+        self.scroll_to_element(*GmailLocator.LAST_NAVIGATION)
+        self.click(GmailLocator.BIN_NAVIGATION)
+
+    # integration keyword
+    def send_email(self, recipients, subject, body_text):
+        self.click_compose_button()
+        self.input_recipients(recipients)
+        self.input_subject(subject)
+        self.input_message_box(body_text)
+        self.click_send_button()
+
+    def move_mail_to_trash(self):
+        self.select_latest_subject()
+        self.click_bin_button()
+
+    def open_trash(self):
+        self.click_more_span()
+        self.click_bin_span()
+        self.wait.until(EC.url_matches(self.TRASH_URL))
+
+
+class GmailResultPage(BasePage):
+    def __init__(self, driver):
+        super().__init__(driver)
+
+    def get_popup_message(self, text):
+        text_popup_msg = POPUP_MSG_XPATH + "//*[text()='" + text + "']"
         element = self.wait.until(
-            EC.element_to_be_clickable(GmailLocator.BIN_NAVIGATION))
-        element.click()
+            EC.element_to_be_clickable((By.XPATH, text_popup_msg)))
+        return element.text == text
 
-    def wait_until_msg(self, text):
+    def get_cur_latest_mail(self):
         element = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='alert' and @aria-live='assertive'][contains(.,'" + text + "')]")))
-        return element.text
-
-
-class GmailResultPage(object):
-    pass
+            EC.visibility_of_element_located(GmailLocator.LATEST_MAIL_SUBJECT))
+        return element
