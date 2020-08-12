@@ -1,14 +1,12 @@
 import pytest
 import time
-from web.page.gmail import GmailLocator, GmailPage
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from web.element.gmail_element import *
+from web.page.gmail import GmailPage, GmailResultPage
 
 
-email = "louiske.testing@gmail.com"
-password = "appier@123"
+EMAIL = "louiske.testing@gmail.com"
+PASSWORD = "appier@123"
 
 
 @pytest.fixture(scope="function")
@@ -41,38 +39,30 @@ def driver(request):
     driver.quit()
 
 
-def test_gmail(driver):
+def test_send_mail_and_move_to_trash(driver):
     # driver = open_browser
+    test_subject = 'Hello_{}'.format(str(int(time.time())))
 
-    gmail_page = GmailPage(driver)
+    gmail_main_page = GmailPage(driver)
+    gmail_login_page = GmailLoginPage(driver)
 
-    gmail_page.load()
-    gmail_page.input_email(email)
-    gmail_page.click_next_button()
-    gmail_page.input_passwrod(password)
-    gmail_page.click_next_button()
+    gmail_main_page.load()
+    assert driver.current_url == gmail_main_page.URL
 
-    gmail_page.click_compose_button()
-    gmail_page.input_recipients(email)
-    gmail_page.input_subject('Hello')
-    gmail_page.input_message_box('Word')
-    gmail_page.click_send_button()
+    gmail_login_page.login(EMAIL, PASSWORD)
+    assert driver.current_url == gmail_main_page.INBOX_URL
 
-    text = gmail_page.wait_until_msg(GmailLocator.SENT_POPUP_MSG)
-    assert 'Message sent.' in text
+    gmail_main_page.send_email(recipients=EMAIL,
+                               subject=test_subject,
+                               body_text='Word')
 
-    gmail_page.select_latest_subject()
+    result = GmailResultPage(driver)
+    assert result.get_popup_message(SENT_POPUP_MSG)
+    assert result.get_cur_latest_mail().text == test_subject
 
-    gmail_page.click_bin_button()
-    text = gmail_page.wait_until_msg(GmailLocator.BIN_POPUP_MSG)
+    gmail_main_page.move_mail_to_trash()
+    assert result.get_popup_message(BIN_POPUP_MSG)
 
-    assert 'Conversation moved to Bin.' in text
-
-    gmail_page.click_more_span()
-    gmail_page.click_bin_span()
-
-    time.sleep(2)
-    print(len(driver.find_elements_by_xpath(
-        "//div[@id=':1']//div[@role='main']//tr[contains(.,'Hello')]")))
-    assert len(driver.find_elements_by_xpath(
-        "//div[@id=':1']//div[@role='main']//tr[contains(.,'Hello')]"))
+    gmail_main_page.open_trash()
+    assert driver.current_url == gmail_main_page.TRASH_URL
+    assert result.get_cur_latest_mail().text == test_subject
