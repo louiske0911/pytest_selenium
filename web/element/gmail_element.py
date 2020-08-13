@@ -10,12 +10,9 @@ MSG_BODY_XPATH = "//div[@aria-label='Message Body']"
 SEND_BUTTON_XPATH = "//div[text()='Send']"
 
 # Inbox
+MAIN_BOX_XPATH = "//div[@role='main']"
 LATEST_MAIL_SUBJECT_XPATH = "(//div[@role='main']//span[@class='bog'])[1]"
-MAIL_SUBJECT_XPATH = "//tr[contains(.,'Hello')]"
-MAIL_SUBJECT_SELECT_XPATH = "//tr[contains(.,'Hello')]//td[@data-tooltip='Select']"
-
-MAIL_SELECT_XPATH = "//tr[contains(.,'Hello')]//td[@data-tooltip='Select']"
-MAIL_SELECT_LATEST_XPATH = "({})[1]".format(MAIL_SELECT_XPATH)
+SELECT_XPATH = "//td[@data-tooltip='Select']"
 
 # Navigation Bar
 BIN_BUTTON_XPATH = "//*[@id=':4']/div/div[1]/div[1]/div/div/div[2]/div[3]"

@@ -19,7 +19,6 @@ class GmailLocator(object):
 
     # Inbox
     LATEST_MAIL_SUBJECT = (By.XPATH, LATEST_MAIL_SUBJECT_XPATH)
-    MAIL_SUBJECT_SELECT = (By.XPATH, MAIL_SUBJECT_SELECT_XPATH)
 
     # Navigation Bar
     BIN_BUTTON = (By.XPATH, BIN_BUTTON_XPATH)
@@ -29,28 +28,6 @@ class GmailLocator(object):
 
     # Popup Message
     POPUP_MSG = (By.XPATH, POPUP_MSG_XPATH)
-
-
-class GmailLoginPage():
-
-    def __init__(self, driver):
-        super().__init__(driver)
-
-    def input_email(self, text):
-        self.input_text(GmailLocator.EMAIL_INPUT, text)
-
-    def input_passwrod(self, text):
-        self.input_text(GmailLocator.PASSWORD_INPUT, text)
-
-    def click_next_button(self):
-        self.click(GmailLocator.NEXT_BUTTON)
-
-    def login(self, email, password):
-        self.input_email(email)
-        self.click_next_button()
-        self.input_passwrod(password)
-        self.click_next_button()
-        self.wait.until(EC.url_matches(self.INBOX_URL))
 
 
 class GmailPage(BasePage):
@@ -81,8 +58,12 @@ class GmailPage(BasePage):
         self.click(GmailLocator.SEND_BUTTON)
 
     # inbox
-    def select_latest_subject(self):
-        self.click((By.XPATH, MAIL_SELECT_LATEST_XPATH))
+    def select_latest_subject(self, subject):
+        subject_xpath = "{}//tr[contains(.,'{}')]{}".format(MAIN_BOX_XPATH,
+                                                            subject,
+                                                            SELECT_XPATH)
+        subject_select = (By.XPATH, subject_xpath)
+        self.click(subject_select)
 
     def click_bin_button(self):
         self.wait.until(
@@ -106,14 +87,36 @@ class GmailPage(BasePage):
         self.input_message_box(body_text)
         self.click_send_button()
 
-    def move_mail_to_trash(self):
-        self.select_latest_subject()
+    def move_mail_to_trash(self, subject):
+        self.select_latest_subject(subject)
         self.click_bin_button()
 
     def open_trash(self):
         self.click_more_span()
         self.click_bin_span()
         self.wait.until(EC.url_matches(self.TRASH_URL))
+
+
+class GmailLoginPage(GmailPage):
+
+    def __init__(self, driver):
+        super().__init__(driver)
+
+    def input_email(self, text):
+        self.input_text(GmailLocator.EMAIL_INPUT, text)
+
+    def input_passwrod(self, text):
+        self.input_text(GmailLocator.PASSWORD_INPUT, text)
+
+    def click_next_button(self):
+        self.click(GmailLocator.NEXT_BUTTON)
+
+    def login(self, email, password):
+        self.input_email(email)
+        self.click_next_button()
+        self.input_passwrod(password)
+        self.click_next_button()
+        self.wait.until(EC.url_matches(self.INBOX_URL))
 
 
 class GmailResultPage(BasePage):
