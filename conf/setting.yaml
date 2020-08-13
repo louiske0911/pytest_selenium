@@ -1,0 +1,9 @@
+common:
+  ENV: dev
+  BROWSER: "chrome"
+  DEFAULT_WAIT: 10
+  EMAIL: "louiske.testing@gmail.com"
+  PASSWORD: "YXBwaWVyQDEyMw=="
+dev:
+qa:
+prod:

@@ -1,0 +1,6 @@
+.history
+.pytest_cache
+*.pyc
+.vscode
+assets
+geckodriver.log
